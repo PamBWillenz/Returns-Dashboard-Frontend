@@ -5,10 +5,12 @@ import "./Dashboard.css";
 const Dashboard = () => {
   const [customerReturns, setCustomerReturns] = useState([]);
   const [merchantData, setMerchantData] = useState([]);
+  const [selectedMerchant, setSelectedMerchant] = useState("");
   const [totalReturnAmount, setTotalReturnAmount] = useState(0);
   const [averageReturnWindow, setAverageReturnWindow] = useState(0);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const API_URL = "http://localhost:3001/api/v1";
 
@@ -40,6 +42,27 @@ const Dashboard = () => {
 
     fetchData();
   }, []);
+  // For Below UseEffect:
+  // Added selectedMerchant state to store the ID of the selected merchant.
+  // Merchant Select Dropdown:
+
+  // Added a dropdown to select a merchant. When a merchant is selected, the selectedMerchant state is updated.
+  // Filter Customer Returns:
+
+  // Filtered customerReturns based on the selected merchant and search term.
+  // Calculate Summary:
+
+  // Calculated the summary (Total Return Amounts and Average Return Window) for the filtered customer returns.
+
+  useEffect(() => {
+    if (selectedMerchant) {
+      const filteredReturns = customerReturns.filter(
+        (customerReturn) =>
+          customerReturn.merchant_id === parseInt(selectedMerchant)
+      );
+      calculateSummary(filteredReturns);
+    }
+  }, [selectedMerchant, customerReturns]);
 
   const calculateSummary = (returns) => {
     if (returns.length === 0) {
@@ -72,17 +95,63 @@ const Dashboard = () => {
   const handleUpdateStatus = async (id, status) => {
     try {
       await axios.put(`${API_URL}/customer_returns/${id}`, { status });
-      // Update the state or refetch data as needed
+      // Update the state directly instead of fetching the data again
+      setCustomerReturns((prevReturns) =>
+        prevReturns.map((customerReturn) =>
+          customerReturn.id === id
+            ? { ...customerReturn, status }
+            : customerReturn
+        )
+      );
     } catch (error) {
       console.error("Error updating status:", error);
     }
   };
 
-  const filteredReturns = customerReturns.filter((customerReturn) =>
-    customerReturn.items.some(
-      (item) =>
-        item.name && item.name.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+  const handleInitiateRefund = async (id) => {
+    try {
+      const customerReturn = customerReturns.find((ret) => ret.id === id);
+      const totalAmount = customerReturn.items.reduce(
+        (sum, item) => sum + parseFloat(item.price),
+        0
+      );
+
+      const response = await axios.post(
+        `${API_URL}/customer_returns/${id}/refund`
+      );
+      // Handle the response as needed
+      console.log("Refund initiated:", response.data);
+      setSuccessMessage(`Refund of $${totalAmount.toFixed(
+        2
+      )} initiated successfully for the items: 
+        ${customerReturn.items.map((item) => item.name).join(", ")}`);
+      setCustomerReturns((prevReturns) =>
+        prevReturns.map((customerReturn) =>
+          customerReturn.id === id
+            ? { ...customerReturn, status: "refunded" }
+            : customerReturn
+        )
+      );
+
+      setTimeout(() => {
+        setSuccessMessage("");
+      }, 15000); // Clear the success message after 5 seconds
+    } catch (error) {
+      console.error("Error initiating refund:", error.response.data.errors);
+      alert(
+        `Error initiating refund: ${error.response.data.errors.join(", ")}`
+      );
+    }
+  };
+
+  const filteredReturns = customerReturns.filter(
+    (customerReturn) =>
+      customerReturn.merchant_id === parseInt(selectedMerchant) &&
+      customerReturn.items.some(
+        (item) =>
+          item.name &&
+          item.name.toLowerCase().includes(searchTerm.toLowerCase())
+      )
   );
 
   return (
@@ -92,6 +161,24 @@ const Dashboard = () => {
       ) : (
         <>
           <h1>Returns Dashboard</h1>
+          {successMessage && (
+            <div className="success-message">{successMessage}</div>
+          )}
+          <div className="merchant-select">
+            <label htmlFor="merchant">Select Merchant:</label>
+            <select
+              id="merchant"
+              value={selectedMerchant}
+              onChange={(e) => setSelectedMerchant(e.target.value)}
+            >
+              <option value="">Select a Merchant</option>
+              {merchantData.map((merchant) => (
+                <option key={merchant.id} value={merchant.id}>
+                  {merchant.name}
+                </option>
+              ))}
+            </select>
+          </div>
           <div className="summary">
             <h2>Summary</h2>
             <p>Total Return Amounts: ${totalReturnAmount.toFixed(2)}</p>
@@ -99,14 +186,6 @@ const Dashboard = () => {
               Average Return Window (Last 14 Days):{" "}
               {averageReturnWindow.toFixed(2)} days
             </p>
-          </div>
-          <div className="merchants">
-            <h2>Merchants</h2>
-            {merchantData.map((merchant) => (
-              <div key={merchant.id}>
-                <p>Name: {merchant.name}</p>
-              </div>
-            ))}
           </div>
           <div className="search">
             <input
@@ -154,6 +233,7 @@ const Dashboard = () => {
                   </td>
                   <td>
                     <button
+                      className="pending"
                       onClick={() =>
                         handleUpdateStatus(customerReturn.id, "pending")
                       }
@@ -161,6 +241,7 @@ const Dashboard = () => {
                       Pending
                     </button>
                     <button
+                      className="approved"
                       onClick={() =>
                         handleUpdateStatus(customerReturn.id, "approved")
                       }
@@ -168,11 +249,20 @@ const Dashboard = () => {
                       Approved
                     </button>
                     <button
+                      className="rejected"
                       onClick={() =>
                         handleUpdateStatus(customerReturn.id, "rejected")
                       }
                     >
                       Rejected
+                    </button>
+                    <button
+                      className="refunded"
+                      onClick={() =>
+                        handleInitiateRefund(customerReturn.id, "refunded")
+                      }
+                    >
+                      Initiate Refund
                     </button>
                   </td>
                 </tr>
