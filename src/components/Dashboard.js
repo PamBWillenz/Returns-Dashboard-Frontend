@@ -4,7 +4,7 @@ import "./Dashboard.css";
 
 const Dashboard = () => {
   const [customerReturns, setCustomerReturns] = useState([]);
-  const [merchantData, setMerchantData] = useState({});
+  const [merchantData, setMerchantData] = useState([]);
   const [totalReturnAmount, setTotalReturnAmount] = useState(0);
   const [averageReturnWindow, setAverageReturnWindow] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -26,7 +26,6 @@ const Dashboard = () => {
     const fetchMerchantData = async () => {
       try {
         const response = await axios.get(`${API_URL}/merchants`);
-        console.log("Merchant Data:", response.data); // Debugging log
         setMerchantData(response.data);
       } catch (error) {
         console.error("Error fetching merchant data:", error);
@@ -42,19 +41,37 @@ const Dashboard = () => {
     fetchData();
   }, []);
 
-  // Added calculateSummary function to compute totalReturnAmount and averageReturnWindow from the customerReturns data.
-  // Called calculateSummary after setting the customerReturns state in the fetchCustomerReturns function.
   const calculateSummary = (returns) => {
-    const totalAmount = returns.reduce((sum, ret) => sum + ret.amount, 0);
+    if (returns.length === 0) {
+      setTotalReturnAmount(0);
+      setAverageReturnWindow(0);
+      return;
+    }
+
+    const totalAmount = returns.reduce((sum, ret) => {
+      const itemTotal = ret.items.reduce(
+        (itemSum, item) => itemSum + parseFloat(item.price),
+        0
+      );
+      return sum + itemTotal;
+    }, 0);
+
     const averageWindow =
-      returns.reduce((sum, ret) => sum + ret.daysToReturn, 0) / returns.length;
+      returns.reduce((sum, ret) => {
+        const orderDate = new Date(ret.order_date);
+        const registeredDate = new Date(ret.registered_date);
+        const daysToReturn =
+          (registeredDate - orderDate) / (1000 * 60 * 60 * 24);
+        return sum + daysToReturn;
+      }, 0) / returns.length;
+
     setTotalReturnAmount(totalAmount);
     setAverageReturnWindow(averageWindow);
   };
 
   const handleUpdateStatus = async (id, status) => {
     try {
-      await axios.put(`/api/customer-returns/${id}`, { status });
+      await axios.put(`${API_URL}/customer_returns/${id}`, { status });
       // Update the state or refetch data as needed
     } catch (error) {
       console.error("Error updating status:", error);
@@ -164,7 +181,6 @@ const Dashboard = () => {
           </table>
         </>
       )}
-      <div className="dashboard-footer">the end</div>
     </div>
   );
 };
