@@ -1,6 +1,12 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import "./Dashboard.css";
+import {
+  fetchCustomerReturns,
+  updateCustomerReturn,
+  fetchMerchantData,
+  initiateRefund,
+} from "../services/api";
 
 const Dashboard = () => {
   const [customerReturns, setCustomerReturns] = useState([]);
@@ -12,47 +18,24 @@ const Dashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  const API_URL = "http://localhost:3001/api/v1";
-
   useEffect(() => {
-    const fetchCustomerReturns = async () => {
-      try {
-        const response = await axios.get(`${API_URL}/customer_returns`);
-        setCustomerReturns(response.data);
-        calculateSummary(response.data);
-      } catch (error) {
-        console.error("Error fetching customer returns:", error);
-      }
-    };
-
-    const fetchMerchantData = async () => {
-      try {
-        const response = await axios.get(`${API_URL}/merchants`);
-        setMerchantData(response.data);
-      } catch (error) {
-        console.error("Error fetching merchant data:", error);
-      }
-    };
-
     const fetchData = async () => {
       setLoading(true);
-      await Promise.all([fetchCustomerReturns(), fetchMerchantData()]);
+      try {
+        const [customerReturnsData, merchantData] = await Promise.all([
+          fetchCustomerReturns(),
+          fetchMerchantData(),
+        ]);
+        setCustomerReturns(customerReturnsData);
+        setMerchantData(merchantData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
       setLoading(false);
     };
 
     fetchData();
   }, []);
-  // For Below UseEffect:
-  // Added selectedMerchant state to store the ID of the selected merchant.
-  // Merchant Select Dropdown:
-
-  // Added a dropdown to select a merchant. When a merchant is selected, the selectedMerchant state is updated.
-  // Filter Customer Returns:
-
-  // Filtered customerReturns based on the selected merchant and search term.
-  // Calculate Summary:
-
-  // Calculated the summary (Total Return Amounts and Average Return Window) for the filtered customer returns.
 
   useEffect(() => {
     if (selectedMerchant) {
@@ -94,7 +77,7 @@ const Dashboard = () => {
 
   const handleUpdateStatus = async (id, status) => {
     try {
-      await axios.put(`${API_URL}/customer_returns/${id}`, { status });
+      await updateCustomerReturn(id, status);
       // Update the state directly instead of fetching the data again
       setCustomerReturns((prevReturns) =>
         prevReturns.map((customerReturn) =>
@@ -116,9 +99,7 @@ const Dashboard = () => {
         0
       );
 
-      const response = await axios.post(
-        `${API_URL}/customer_returns/${id}/refund`
-      );
+      const response = await initiateRefund(id);
       // Handle the response as needed
       console.log("Refund initiated:", response.data);
       setSuccessMessage(`Refund of $${totalAmount.toFixed(
@@ -135,7 +116,7 @@ const Dashboard = () => {
 
       setTimeout(() => {
         setSuccessMessage("");
-      }, 15000); // Clear the success message after 5 seconds
+      }, 15000); // Clear the success message after 15 seconds
     } catch (error) {
       console.error("Error initiating refund:", error.response.data.errors);
       alert(
