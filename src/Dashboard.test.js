@@ -1,6 +1,7 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import Dashboard from "./components/Dashboard";
+import "@testing-library/jest-dom/extend-expect";
 import * as api from "./services/api"; // Mock the API calls
 
 // Mock the API calls
