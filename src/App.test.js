@@ -1,8 +1,18 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import Dashboard from "./components/Dashboard";
+import { act } from "react";
 
-test("renders Returns Dashboard", () => {
-  render(<Dashboard />);
-  const Element = screen.getByText(/Returns Dashboard/i);
-  expect(Element).toBeInTheDocument();
+test("renders Returns Dashboard", async () => {
+  await act(async () => {
+    render(<Dashboard />);
+  });
+
+  await waitFor(() => {
+    expect(screen.getByText(/loading/i)).toBeInTheDocument();
+  });
+
+  await waitFor(() => {
+    const element = screen.getByRole("heading", { name: /Returns Dashboard/i });
+    expect(element).toBeInTheDocument();
+  });
 });

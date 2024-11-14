@@ -5,7 +5,7 @@ import {
   updateCustomerReturn,
   fetchMerchantData,
   initiateRefund,
-} from "../services/api";
+} from "../services/api.js";
 
 const Dashboard = () => {
   const [customerReturns, setCustomerReturns] = useState([]);

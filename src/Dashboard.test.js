@@ -34,6 +34,7 @@ const mockMerchants = [
 describe("Dashboard", () => {
   beforeEach(() => {
     api.fetchCustomerReturns.mockResolvedValue(mockCustomerReturns);
+    api.updateCustomerReturn.mockResolvedValue(mockCustomerReturns[0]);
     api.fetchMerchantData.mockResolvedValue(mockMerchants);
   });
 
@@ -49,8 +50,14 @@ describe("Dashboard", () => {
     });
 
     // Check if the customer returns are displayed
-    expect(screen.getByText(/item 1/i)).toBeInTheDocument();
-    expect(screen.getByText(/item 2/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByLabelText(/item 1/i), {
+        selector: "td",
+      }).toBeInTheDocument();
+      expect(screen.getByLabelText(/item 2/i), {
+        selector: "td",
+      }).toBeInTheDocument();
+    });
 
     // Check if the merchants are displayed in the select dropdown
     fireEvent.change(screen.getByLabelText(/select merchant/i), {
@@ -74,7 +81,7 @@ describe("Dashboard", () => {
     });
 
     // Click the "Approved" button for the first customer return
-    fireEvent.click(screen.getAllByText(/approved/i)[0]);
+    fireEvent.click(screen.getByRole("button", { name: /approved/i }));
 
     // Wait for the status to be updated
     await waitFor(() => {
@@ -94,7 +101,7 @@ describe("Dashboard", () => {
     api.initiateRefund.mockResolvedValue({ message: "Refund successful" });
 
     // Click the "Initiate Refund" button for the first customer return
-    fireEvent.click(screen.getAllByText(/initiate refund/i)[0]);
+    fireEvent.click(screen.getByRole("button", { name: /initiate refund/i }));
 
     // Wait for the success message to be displayed
     await waitFor(() => {
