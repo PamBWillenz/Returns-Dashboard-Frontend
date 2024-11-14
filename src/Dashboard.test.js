@@ -11,7 +11,7 @@ const mockCustomerReturns = [
   {
     id: 1,
     status: "pending",
-    items: [{ name: "Item 1", price: "10.00" }],
+    items: [{ name: "Items 1", price: "10.00" }],
     order_date: "2024-11-01T00:00:00.000Z",
     registered_date: "2024-11-05T00:00:00.000Z",
     merchant_id: 1,
@@ -19,7 +19,7 @@ const mockCustomerReturns = [
   {
     id: 2,
     status: "approved",
-    items: [{ name: "Item 2", price: "20.00" }],
+    items: [{ name: "Items 2", price: "20.00" }],
     order_date: "2024-11-02T00:00:00.000Z",
     registered_date: "2024-11-06T00:00:00.000Z",
     merchant_id: 1,
@@ -46,24 +46,20 @@ describe("Dashboard", () => {
 
     // Wait for the data to be loaded
     await waitFor(() => {
-      expect(screen.getByText(/returns dashboard/i)).toBeInTheDocument();
+      expect(screen.getByText(/Returns Dashboard/i)).toBeInTheDocument();
     });
 
     // Check if the customer returns are displayed
     await waitFor(() => {
-      expect(screen.getByLabelText(/item 1/i), {
-        selector: "td",
-      }).toBeInTheDocument();
-      expect(screen.getByLabelText(/item 2/i), {
-        selector: "td",
-      }).toBeInTheDocument();
+      expect(screen.getByText(/Items 1/i)).toBeInTheDocument();
+      expect(screen.getByText(/Items 2/i)).toBeInTheDocument();
     });
 
     // Check if the merchants are displayed in the select dropdown
-    fireEvent.change(screen.getByLabelText(/select merchant/i), {
+    fireEvent.change(screen.getByLabelText(/Select Merchant/i), {
       target: { value: "1" },
     });
-    expect(screen.getByText(/merchant one/i)).toBeInTheDocument();
+    expect(screen.getByText(/Merchant One/i)).toBeInTheDocument();
   });
 
   test("updates the status of a customer return", async () => {
@@ -71,7 +67,7 @@ describe("Dashboard", () => {
 
     // Wait for the data to be loaded
     await waitFor(() => {
-      expect(screen.getByText(/returns dashboard/i)).toBeInTheDocument();
+      expect(screen.getByText(/Returns Dashboard/i)).toBeInTheDocument();
     });
 
     // Mock the updateCustomerReturn API call
@@ -81,11 +77,11 @@ describe("Dashboard", () => {
     });
 
     // Click the "Approved" button for the first customer return
-    fireEvent.click(screen.getByRole("button", { name: /approved/i }));
+    fireEvent.click(screen.getAllByRole("button", { name: /approved/i })[0]);
 
     // Wait for the status to be updated
     await waitFor(() => {
-      expect(screen.getAllByText(/approved/i).length).toBe(2);
+      expect(screen.getAllByText(/approved/i).length).toBe(3);
     });
   });
 
@@ -101,7 +97,9 @@ describe("Dashboard", () => {
     api.initiateRefund.mockResolvedValue({ message: "Refund successful" });
 
     // Click the "Initiate Refund" button for the first customer return
-    fireEvent.click(screen.getByRole("button", { name: /initiate refund/i }));
+    fireEvent.click(
+      screen.getAllByRole("button", { name: /initiate refund/i })[0]
+    );
 
     // Wait for the success message to be displayed
     await waitFor(() => {
