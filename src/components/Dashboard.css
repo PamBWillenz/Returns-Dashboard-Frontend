@@ -1,5 +1,4 @@
 /* Dashboard.css */
-/* Dashboard.css */
 
 .dashboard-container {
   display: flex;
@@ -34,6 +33,11 @@ h1, h2 {
   margin-top: 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
+}
+
+.table-container {
+  width: 100%;
+  overflow-x: auto;
 }
 
 table {
@@ -100,22 +104,75 @@ button.refunded {
   color: #fff;
 }
 
-/* Dashboard.css */
-
 .success-message {
-  background-color: #28a745; /* Bright green background */
-  color: #fff; /* White text color */
-  padding: 20px; /* Increased padding */
+  background-color: #28a745;
+  color: #fff;
+  padding: 20px;
   margin-bottom: 20px;
-  border: 2px solid #218838; /* Darker green border */
-  border-radius: 8px; /* Rounded corners */
-  font-size: 18px; /* Larger font size */
-  font-weight: bold; /* Bold text */
-  text-align: center; /* Centered text */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Box shadow for pop-out effect */
+  border: 2px solid #218838;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transition: opacity 0.5s ease-in-out;
 }
 
 .success-message.fade-out {
   opacity: 0;
+}
+
+.dashboard-footer {
+  margin-top: 20px;
+  font-size: 14px;
+  color: #888;
+}
+
+/* Media Queries for Responsive Design */
+@media (max-width: 768px) {
+  .summary, .merchants, .search, .customer-returns {
+    padding: 15px;
+  }
+
+  table th, table td {
+    padding: 6px;
+  }
+
+  button {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+
+  .success-message {
+    font-size: 16px;
+    padding: 15px;
+  }
+
+  /* Hide certain columns on smaller screens */
+  table th:nth-child(4), table td:nth-child(4), /* Order Date */
+  table th:nth-child(5), table td:nth-child(5), /* Registered Date */
+  table th:nth-child(6), table td:nth-child(6) { /* Days to Return */
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .summary, .merchants, .search, .customer-returns {
+    padding: 10px;
+  }
+
+  table th, table td {
+    padding: 4px;
+  }
+
+  button {
+    padding: 6px 12px;
+    font-size: 10px;
+  }
+
+  .success-message {
+    font-size: 14px;
+    padding: 10px;
+  }
+
 }

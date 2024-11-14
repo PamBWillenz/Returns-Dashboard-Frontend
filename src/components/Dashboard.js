@@ -1,4 +1,3 @@
-import axios from "axios";
 import React, { useEffect, useState } from "react";
 import "./Dashboard.css";
 import {
@@ -6,7 +5,7 @@ import {
   updateCustomerReturn,
   fetchMerchantData,
   initiateRefund,
-} from "../services/api";
+} from "../services/api.js";
 
 const Dashboard = () => {
   const [customerReturns, setCustomerReturns] = useState([]);
@@ -28,6 +27,9 @@ const Dashboard = () => {
         ]);
         setCustomerReturns(customerReturnsData);
         setMerchantData(merchantData);
+        if (merchantData.length > 0) {
+          setSelectedMerchant(merchantData[0].id.toString());
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -101,7 +103,7 @@ const Dashboard = () => {
 
       const response = await initiateRefund(id);
       // Handle the response as needed
-      console.log("Refund initiated:", response.data);
+      console.log("Refund initiated:", response?.data);
       setSuccessMessage(`Refund of $${totalAmount.toFixed(
         2
       )} initiated successfully for the items: 
@@ -118,9 +120,9 @@ const Dashboard = () => {
         setSuccessMessage("");
       }, 15000); // Clear the success message after 15 seconds
     } catch (error) {
-      console.error("Error initiating refund:", error.response.data.errors);
+      console.error("Error initiating refund:", error.response?.data?.errors);
       alert(
-        `Error initiating refund: ${error.response.data.errors.join(", ")}`
+        `Error initiating refund: ${error.response?.data?.errors.join(", ")}`
       );
     }
   };

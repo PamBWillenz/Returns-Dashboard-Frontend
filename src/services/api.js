@@ -23,9 +23,11 @@ export const initiateRefund = async (id) => {
   return response.data;
 };
 
-export default {
+const api = {
   fetchCustomerReturns,
   updateCustomerReturn,
   fetchMerchantData,
   initiateRefund,
 };
+
+export default api;
