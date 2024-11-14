@@ -13,7 +13,7 @@ export const updateCustomerReturn = async (id, status) => {
   return response.data;
 };
 
-export const fetchMerchantData = async (id) => {
+export const fetchMerchantData = async () => {
   const response = await axios.get(`${API_URL}/merchants/`);
   return response.data;
 };
