@@ -65,12 +65,12 @@ const Dashboard = () => {
 
   const handleUpdateStatus = async (id, status) => {
     try {
-      await updateCustomerReturn(id, status);
+      const updatedReturn = await updateCustomerReturn(id, status);
       // Update the state directly instead of fetching the data again
       setCustomerReturns((prevReturns) =>
         prevReturns.map((customerReturn) =>
           customerReturn.id === id
-            ? { ...customerReturn, status }
+            ? { ...customerReturn, status: updatedReturn.status }
             : customerReturn
         )
       );
