@@ -17,6 +17,14 @@ const Dashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
+  const updateSummary = (merchant) => {
+    const totalAmount = parseFloat(merchant.total_return_amount);
+    const averageWindow = parseFloat(merchant.average_return_window);
+    setTotalReturnAmount(isNaN(totalAmount) ? 0 : totalAmount);
+    setAverageReturnWindow(isNaN(averageWindow) ? 0 : averageWindow);
+  };
+
+  // First useEffect: Fetching data when the component mounts
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -29,6 +37,7 @@ const Dashboard = () => {
         setMerchantData(merchantData);
         if (merchantData.length > 0) {
           setSelectedMerchant(merchantData[0].id.toString());
+          updateSummary(merchantData[0]);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -39,43 +48,17 @@ const Dashboard = () => {
     fetchData();
   }, []);
 
+  // Second useEffect: Updating summary when selectedMerchant or merchantData changes
   useEffect(() => {
     if (selectedMerchant) {
-      const filteredReturns = customerReturns.filter(
-        (customerReturn) =>
-          customerReturn.merchant_id === parseInt(selectedMerchant)
+      const selectedMerchantData = merchantData.find(
+        (merchant) => merchant.id.toString() === selectedMerchant
       );
-      calculateSummary(filteredReturns);
+      if (selectedMerchantData) {
+        updateSummary(selectedMerchantData);
+      }
     }
-  }, [selectedMerchant, customerReturns]);
-
-  const calculateSummary = (returns) => {
-    if (returns.length === 0) {
-      setTotalReturnAmount(0);
-      setAverageReturnWindow(0);
-      return;
-    }
-
-    const totalAmount = returns.reduce((sum, ret) => {
-      const itemTotal = ret.items.reduce(
-        (itemSum, item) => itemSum + parseFloat(item.price),
-        0
-      );
-      return sum + itemTotal;
-    }, 0);
-
-    const averageWindow =
-      returns.reduce((sum, ret) => {
-        const orderDate = new Date(ret.order_date);
-        const registeredDate = new Date(ret.registered_date);
-        const daysToReturn =
-          (registeredDate - orderDate) / (1000 * 60 * 60 * 24);
-        return sum + daysToReturn;
-      }, 0) / returns.length;
-
-    setTotalReturnAmount(totalAmount);
-    setAverageReturnWindow(averageWindow);
-  };
+  }, [selectedMerchant, merchantData]);
 
   const handleUpdateStatus = async (id, status) => {
     try {
@@ -101,9 +84,8 @@ const Dashboard = () => {
         0
       );
 
-      const response = await initiateRefund(id);
+      await initiateRefund(id);
       // Handle the response as needed
-      console.log("Refund initiated:", response?.data);
       setSuccessMessage(`Refund of $${totalAmount.toFixed(
         2
       )} initiated successfully for the items: 
