@@ -12,16 +12,19 @@ const Dashboard = () => {
   const [merchantData, setMerchantData] = useState([]);
   const [selectedMerchant, setSelectedMerchant] = useState("");
   const [totalReturnAmount, setTotalReturnAmount] = useState(0);
-  const [averageReturnWindow, setAverageReturnWindow] = useState(0);
+  const [averageReturnWindow, setAverageReturnWindow] = useState("");
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
   const updateSummary = (merchant) => {
     const totalAmount = parseFloat(merchant.total_return_amount);
-    const averageWindow = parseFloat(merchant.average_return_window);
+    const averageWindow =
+      merchant.average_return_window === "-"
+        ? "No recent returns"
+        : parseFloat(merchant.average_return_window).toFixed(2);
     setTotalReturnAmount(isNaN(totalAmount) ? 0 : totalAmount);
-    setAverageReturnWindow(isNaN(averageWindow) ? 0 : averageWindow);
+    setAverageReturnWindow(averageWindow);
   };
 
   // First useEffect: Fetching data when the component mounts
@@ -147,10 +150,7 @@ const Dashboard = () => {
           <div className="summary">
             <h2>Summary</h2>
             <p>Total Return Amounts: ${totalReturnAmount.toFixed(2)}</p>
-            <p>
-              Average Return Window (Last 14 Days):{" "}
-              {averageReturnWindow.toFixed(2)} days
-            </p>
+            <p>Average Return Window (Last 14 Days): {averageReturnWindow}</p>
           </div>
           <div className="search">
             <input
