@@ -10,7 +10,9 @@ import {
 const Dashboard = () => {
   const [customerReturns, setCustomerReturns] = useState([]);
   const [merchantData, setMerchantData] = useState([]);
-  const [selectedMerchant, setSelectedMerchant] = useState("");
+  const [selectedMerchant, setSelectedMerchant] = useState(
+    localStorage.getItem("selectedMerchant") || ""
+  );
   const [totalReturnAmount, setTotalReturnAmount] = useState(0);
   const [averageReturnWindow, setAverageReturnWindow] = useState("");
   const [loading, setLoading] = useState(true);
@@ -39,8 +41,14 @@ const Dashboard = () => {
         setCustomerReturns(customerReturnsData);
         setMerchantData(merchantData);
         if (merchantData.length > 0) {
-          setSelectedMerchant(merchantData[0].id.toString());
-          updateSummary(merchantData[0]);
+          const initialMerchant =
+            selectedMerchant || merchantData[0].id.toString();
+          setSelectedMerchant(initialMerchant);
+          updateSummary(
+            merchantData.find(
+              (merchant) => merchant.id.toString() === initialMerchant
+            )
+          );
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -54,6 +62,7 @@ const Dashboard = () => {
   // Second useEffect: Updating summary when selectedMerchant or merchantData changes
   useEffect(() => {
     if (selectedMerchant) {
+      localStorage.setItem("selectedMerchant", selectedMerchant);
       const selectedMerchantData = merchantData.find(
         (merchant) => merchant.id.toString() === selectedMerchant
       );

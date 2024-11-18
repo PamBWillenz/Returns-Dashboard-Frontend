@@ -6,6 +6,7 @@ export const fetchCustomerReturns = async () => {
   const response = await axios.get(`${API_URL}/customer_returns`);
   return response.data;
 };
+
 export const updateCustomerReturn = async (id, status) => {
   const response = await axios.put(`${API_URL}/customer_returns/${id}`, {
     status,
@@ -14,7 +15,7 @@ export const updateCustomerReturn = async (id, status) => {
 };
 
 export const fetchMerchantData = async () => {
-  const response = await axios.get(`${API_URL}/merchants/`);
+  const response = await axios.get(`${API_URL}/merchants`);
   return response.data;
 };
 
