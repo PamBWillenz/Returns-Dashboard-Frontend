@@ -8,6 +8,7 @@ import {
 } from "../services/api.js";
 
 const Dashboard = () => {
+  // State variables to manage the data and UI state
   const [customerReturns, setCustomerReturns] = useState([]);
   const [merchantData, setMerchantData] = useState([]);
   const [selectedMerchant, setSelectedMerchant] = useState(
@@ -19,6 +20,7 @@ const Dashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
+  // Function to update the summary based on the selected merchant
   const updateSummary = (merchant) => {
     const totalAmount = parseFloat(merchant.total_return_amount);
     const averageWindow =
@@ -34,6 +36,7 @@ const Dashboard = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
+        // Fetch the customer returns and merchant data in parallel
         const [customerReturnsData, merchantData] = await Promise.all([
           fetchCustomerReturns(),
           fetchMerchantData(),
@@ -41,6 +44,7 @@ const Dashboard = () => {
         setCustomerReturns(customerReturnsData);
         setMerchantData(merchantData);
         if (merchantData.length > 0) {
+          // Set the initial selected merchant and update the summary
           const initialMerchant =
             selectedMerchant || merchantData[0].id.toString();
           setSelectedMerchant(initialMerchant);
@@ -57,11 +61,12 @@ const Dashboard = () => {
     };
 
     fetchData();
-  }, []);
+  }, [selectedMerchant]);
 
   // Second useEffect: Updating summary when selectedMerchant or merchantData changes
   useEffect(() => {
     if (selectedMerchant) {
+      // Store the selected merchant in localStorage
       localStorage.setItem("selectedMerchant", selectedMerchant);
       const selectedMerchantData = merchantData.find(
         (merchant) => merchant.id.toString() === selectedMerchant
@@ -72,6 +77,7 @@ const Dashboard = () => {
     }
   }, [selectedMerchant, merchantData]);
 
+  // function to handle updating the status of a customer return
   const handleUpdateStatus = async (id, status) => {
     try {
       const updatedReturn = await updateCustomerReturn(id, status);
@@ -87,7 +93,7 @@ const Dashboard = () => {
       console.error("Error updating status:", error);
     }
   };
-
+  // function to handle initiating a refund for a customer return
   const handleInitiateRefund = async (id) => {
     try {
       const customerReturn = customerReturns.find((ret) => ret.id === id);
@@ -121,6 +127,7 @@ const Dashboard = () => {
     }
   };
 
+  // filter customer returns based on selected merchant and search term
   const filteredReturns = customerReturns.filter(
     (customerReturn) =>
       customerReturn.merchant_id === parseInt(selectedMerchant) &&
